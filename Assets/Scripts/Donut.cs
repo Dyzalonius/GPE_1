@@ -21,7 +21,7 @@ public class Donut : MonoBehaviour
     private float thickness;
     
     [SerializeField]
-    private Vector2 textureSize;
+    private Vector2 textureSize; // make it so its a Vector2Int and it determines how many times the texture will wrap, regardless of vertexcount
 
     [SerializeField]
     private Vector3 center;
@@ -53,14 +53,15 @@ public class Donut : MonoBehaviour
         mesh.vertices = vertices;
         mesh.triangles = triangles;
         mesh.uv = uv;
+        mesh.RecalculateNormals();
     }
 
     private void FindVertices()
     {
-        vertices = new Vector3[(sections + 1) * verticesPerCircle];
+        vertices = new Vector3[(sections + 1) * (verticesPerCircle + 1)];
 
         for (int i = 0; i < (sections + 1); i++)
-            for (int j = 0; j < verticesPerCircle; j++)
+            for (int j = 0; j <= verticesPerCircle; j++)
             {
                 Vector3 pos = new Vector3
                 {
@@ -74,12 +75,12 @@ public class Donut : MonoBehaviour
 
     private void FindUV()
     {
-        uv = new Vector2[(sections + 1) * verticesPerCircle];
+        uv = new Vector2[(sections + 1) * (verticesPerCircle + 1)];
 
         for (int i = 0; i < (sections + 1); i++)
-            for (int j = 0; j < verticesPerCircle; j++)
+            for (int j = 0; j <= verticesPerCircle; j++)
             {
-                Vector2 newUV = new Vector2(i / textureSize.x, j / textureSize.y); //Problem is that if value goes over 1, between vertex 9 and 0, it will go from e.g. uv 20 to 0 in a single face.
+                Vector2 newUV = new Vector2(i / textureSize.x, j / textureSize.y); //Problem is that if value goes over 1, between vertex 9 and 0, it will go from e.g. uv 20 to 0 in a single face. Fix problem by adding extra set of vertices by making for loop <=, remove modulo from FindTriangles to instead of wrap make it to the last vertices.
                 uv[i * verticesPerCircle + j] = newUV;
             }
     }
@@ -93,12 +94,12 @@ public class Donut : MonoBehaviour
             for (int j = 0; j < verticesPerCircle; j++)
             {
                 triangles[(((i * verticesPerCircle) + j) * 6)] = (i * verticesPerCircle + j);
-                triangles[(((i * verticesPerCircle) + j) * 6) + 1] = (i * verticesPerCircle + ((j + 1) % verticesPerCircle));
+                triangles[(((i * verticesPerCircle) + j) * 6) + 1] = (i * verticesPerCircle + ((j + 1)));
                 triangles[(((i * verticesPerCircle) + j) * 6) + 2] = (i * verticesPerCircle + j + verticesPerCircle);
                 
                 triangles[(((i * verticesPerCircle) + j) * 6) + 3] = (i * verticesPerCircle + j + verticesPerCircle);
-                triangles[(((i * verticesPerCircle) + j) * 6) + 4] = (i * verticesPerCircle + ((j + 1) % verticesPerCircle));
-                triangles[(((i * verticesPerCircle) + j) * 6) + 5] = (i * verticesPerCircle + ((j + 1) % verticesPerCircle) + verticesPerCircle);
+                triangles[(((i * verticesPerCircle) + j) * 6) + 4] = (i * verticesPerCircle + ((j + 1)));
+                triangles[(((i * verticesPerCircle) + j) * 6) + 5] = (i * verticesPerCircle + ((j + 1)) + verticesPerCircle);
             }
         }
     }
